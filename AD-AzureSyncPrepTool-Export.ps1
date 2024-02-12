@@ -13,8 +13,17 @@ $adProperties = "SamAccountName", "DisplayName", "GivenName", "Surname", "EmailA
 # Get all users in the OU for on-prem AD
 $adUsers = Get-ADUser -Filter * -SearchBase $ou -Property $adProperties
 
+# Define the path to the directory we want to check/create
+$directoryPath = 'C:\temp'
+
+# Check if the directory already exists
+if (!(Test-Path $directoryPath)) {
+    # If the directory does not exist, create it
+    New-Item -ItemType Directory -Force -Path $directoryPath | Out-Null
+}
+
 # Define the path for the CSV file for on-prem AD
-$adCsvFilePath = "C:\temp\ad_users.csv"
+$adCsvFilePath = $directoryPath+"\ad_users.csv"
 
 # Export the on-prem AD users to a CSV file
 $adUsers | Select-Object $adProperties | Export-Csv -Path $adCsvFilePath -NoTypeInformation
@@ -35,7 +44,7 @@ $allO365Users = Get-AzureADUser -All $true | Where-Object { $_.UserPrincipalName
 }
 
 # Define the path for the CSV file for Office 365
-$o365CsvFilePath = "C:\temp\O365_users.csv"
+$o365CsvFilePath = $directoryPath+"\O365_users.csv"
 
 # Export all Office 365 users (enabled and disabled) to a CSV file
 $allO365Users | Export-Csv -Path $o365CsvFilePath -NoTypeInformation
@@ -44,7 +53,7 @@ $allO365Users | Export-Csv -Path $o365CsvFilePath -NoTypeInformation
 $domains = Get-AzureADDomain
 
 # Define the path for the CSV file for Office 365 domains
-$domainsCsvFilePath = "C:\temp\O365_domains.csv"
+$domainsCsvFilePath = $directoryPath+"\O365_domains.csv"
 
 # Export the list of Office 365 domains to a CSV file
 $domains | Select-Object Name, AuthenticationType, IsDefault, IsInitial | Export-Csv -Path $domainsCsvFilePath -NoTypeInformation
@@ -119,11 +128,11 @@ foreach ($o365User in $o365Users) {
 }
 
 # Define the path for the CSV file for the matched users
-$matchedCsvFilePath = "C:\temp\matched_users.csv"
+$matchedCsvFilePath = $directoryPath+"\matched_users.csv"
 
 # Define the paths for the additional CSV files
-$adNotMatchedCsvFilePath = "C:\temp\ad_users_not_matched.csv"
-$o365NotMatchedCsvFilePath = "C:\temp\o365_users_not_matched.csv"
+$adNotMatchedCsvFilePath = $directoryPath+"\ad_users_not_matched.csv"
+$o365NotMatchedCsvFilePath = $directoryPath+"\o365_users_not_matched.csv"
 
 # Export the matched users to a CSV file
 $matchedUsers | Export-Csv -Path $matchedCsvFilePath -NoTypeInformation
